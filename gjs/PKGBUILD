@@ -1,0 +1,45 @@
+# $Id: PKGBUILD 169881 2012-10-30 22:25:52Z heftig $
+# Maintainer: Ionut Biru <ibiru@archlinux.org>
+
+pkgname=gjs
+pkgver=20121129
+pkgrel=1
+pkgdesc="Javascript Bindings for GNOME"
+arch=('i686' 'x86_64')
+url="http://live.gnome.org/Gjs"
+license=('GPL')
+depends=(cairo dbus-glib gobject-introspection js)
+makedepends=(gtk-doc gnome-common git)
+options=(!libtool)
+
+_gitroot=git://git.gnome.org/gjs
+_gitname=gjs
+
+build() {
+    cd "$srcdir"
+
+    msg "Connecting to GIT server...."
+    if [[ -d $_gitname/.git ]]; then
+        pushd $_gitname && git pull
+        msg2 "The local files are updated."
+        popd
+    else
+        git clone $_gitroot
+    fi
+    msg2 "GIT checkout done or server timeout"
+
+    rm -rf $_gitname-build/
+    cp -r $_gitname/ $_gitname-build/
+    cd $_gitname-build/
+
+    msg "Building..."
+
+  sed -i 's|python|python2|' scripts/make-tests
+  ./autogen.sh --prefix=/usr --disable-static
+  make
+}
+
+package() {
+  cd "$srcdir/$_gitname-build/"
+  make DESTDIR="$pkgdir" install
+}

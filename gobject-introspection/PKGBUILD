@@ -1,0 +1,55 @@
+# Maintainer: Joao Cordeiro <jlcordeiro at gmail dot com>
+# Contributor: <arsenm2@rpi.edu>
+
+pkgname=gobject-introspection
+pkgver=20110123
+pkgrel=1
+pkgdesc="GObject Introspection"
+arch=('i686' 'x86_64')
+url="http://live.gnome.org/GObjectIntrospection/"
+license=('LGPL')
+depends=('glib2' 'python2' 'python2-mako')
+optdepends=()
+makedepends=('git' 'gtk-doc' 'gnome-common' 'cairo')
+provides=('gobject-introspection')
+options=(!libtool)
+install=
+source=()
+
+_gitroot="git://git.gnome.org/gobject-introspection"
+_gitname="gobject-introspection"
+
+build() {
+  cd $srcdir
+  msg "Connecting to git.gnome.org GIT server...."
+
+  if [ -d $srcdir/$_gitname ] ; then
+    cd $_gitname && git pull origin
+    msg "The local files are updated."
+  else
+    git clone $_gitroot
+  fi
+
+
+  msg "GIT checkout done or server timeout"
+  msg "Starting make..."
+
+    rm -rf $_gitname-build/
+    cp -r $_gitname/ $_gitname-build/
+    cd $_gitname-build/
+  
+  msg "Starting build"
+  PYTHON=/usr/bin/python2 ./autogen.sh --prefix=/usr --disable-static --enable-doctool
+
+  make
+}
+
+package() {
+  cd "$srcdir"/$_gitname-build/
+  make DESTDIR="$pkgdir" install
+
+  sed -i '1s|#!/usr/bin/env python$|&2|' \
+    "$pkgdir"/usr/lib/gobject-introspection/giscanner/*.py
+}
+
+# vim:set ts=2 sw=2 et:
