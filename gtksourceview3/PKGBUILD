@@ -1,0 +1,46 @@
+# Maintainer: marijus
+
+pkgname=gtksourceview3
+_pkgbasename=gtksourceview
+pkgver=20130101
+pkgrel=1
+pkgdesc="A text widget adding syntax highlighting and more to GNOME"
+arch=('i686' 'x86_64')
+license=('GPL')
+depends=('gtk3' 'libxml2')
+makedepends=(intltool gobject-introspection glade gtk-doc gnome-common git)
+options=('!libtool')
+url="http://www.gnome.org"
+
+_gitroot=git://git.gnome.org/gtksourceview
+_gitname=gtksourceview
+
+build() {
+    cd $srcdir
+
+    msg "Connecting to GIT server...."
+    if [[ -d $_gitname/.git ]]; then
+        pushd $_gitname && git pull
+        msg2 "The local files are updated."
+        popd
+    else
+        git clone $_gitroot
+    fi
+    msg2 "GIT checkout done or server timeout"
+
+    rm -rf $_gitname-build/
+    cp -r $_gitname/ $_gitname-build/
+    cd $_gitname-build/
+
+    msg "Building..."
+
+  ./autogen.sh --prefix=/usr --sysconfdir=/etc \
+      --localstatedir=/var --disable-static \
+      --enable-glade-catalog
+  make
+}
+
+package() {
+  cd $srcdir/$_gitname-build/
+  make DESTDIR="$pkgdir" install
+}
