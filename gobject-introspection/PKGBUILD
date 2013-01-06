@@ -1,5 +1,5 @@
-# Maintainer: Joao Cordeiro <jlcordeiro at gmail dot com>
-# Contributor: <arsenm2@rpi.edu>
+# Maintainer: marijus
+
 
 pkgname=gobject-introspection
 pkgver=20110123
