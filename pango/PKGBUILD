@@ -1,0 +1,46 @@
+# Maintainer: marijus
+
+pkgname=pango
+pkgver=20130102
+pkgrel=1
+pkgdesc="A library for layout and rendering of text"
+arch=('i686' 'x86_64')
+url="http://www.pango.org/"
+license=('LGPL')
+depends=('libthai' 'cairo' 'libxft' 'harfbuzz')
+makedepends=(fontconfig cairo libxft libthai gobject-introspection gtk-doc gnome-common git)
+options=('!libtool')
+install=pango.install
+
+_gitroot=git://git.gnome.org/pango
+_gitname=pango
+
+build() {
+  cd $srcdir
+
+    msg "Connecting to GIT server...."
+    if [[ -d $_gitname/.git ]]; then
+        pushd $_gitname && git pull
+        msg2 "The local files are updated."
+        popd
+    else
+        git clone $_gitroot
+    fi
+    msg2 "GIT checkout done or server timeout"
+
+    rm -rf $_gitname-build/
+    cp -r $_gitname/ $_gitname-build/
+    cd $_gitname-build/
+
+    msg "Building..."
+
+  ./autogen.sh --prefix=/usr --sysconfdir=/etc \
+      --localstatedir=/var --with-included-modules=basic-fc
+  make
+}
+
+package() {
+  cd $srcdir/$_gitname-build/
+  make -j1 DESTDIR="${pkgdir}" install
+  install -m755 -d "${pkgdir}/etc/pango"
+}

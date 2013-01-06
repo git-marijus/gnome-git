@@ -1,0 +1,47 @@
+# Maintainer: marijus
+
+pkgname=dconf
+pkgver=20130103
+pkgrel=1
+pkgdesc="A low-level configuration system."
+arch=(i686 x86_64)
+url="http://live.gnome.org/dconf"
+license=('LGPL2.1')
+depends=('glib2' 'gtk-update-icon-cache')
+makedepends=(python2 vala gtk3 intltool docbook-xsl gtk-doc gnome-common git)
+optdepends=('gtk3: for dconf-editor')
+install=dconf.install
+
+_gitroot=git://git.gnome.org/dconf
+_gitname=dconf
+
+build() {
+    cd "$srcdir"
+
+    msg "Connecting to GIT server...."
+    if [[ -d $_gitname/.git ]]; then
+        pushd $_gitname && git pull
+        msg2 "The local files are updated."
+        popd
+    else
+        git clone $_gitroot
+    fi
+    msg2 "GIT checkout done or server timeout"
+
+    rm -rf $_gitname-build/
+    cp -r $_gitname/ $_gitname-build/
+    cd $_gitname-build/
+
+    msg "Building..."
+
+  ./autogen.sh --prefix=/usr --sysconfdir=/etc \
+    --libexecdir=/usr/lib/dconf
+  make
+}
+
+package() {
+  cd "$srcdir/$_gitname-build/"
+  make completiondir=/usr/share/bash-completion/completions DESTDIR="$pkgdir" install
+}
+
+# vim:set ts=2 sw=2 et:

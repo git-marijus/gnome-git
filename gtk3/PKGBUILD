@@ -1,0 +1,56 @@
+# Maintainer: marijus
+
+pkgname=gtk3
+pkgver=20130304
+pkgrel=1
+pkgdesc="GObject-based multi-platform GUI toolkit (v3)"
+arch=('i686' 'x86_64')
+url="http://www.gtk.org/"
+install=gtk3.install
+depends=('atk' 'cairo' 'gtk-update-icon-cache' 'libcups' 'libxcursor' 'libxinerama' 'libxrandr' 'libxi' 'libxcomposite' 'libxdamage' 'pango' 'shared-mime-info' 'colord' 'at-spi2-atk')
+makedepends=(gobject-introspection gtk-doc gnome-common git)
+options=('!libtool')
+backup=(etc/gtk-3.0/settings.ini)
+license=('LGPL')
+source=(settings.ini)
+sha256sums=('c214d3dcdcadda3d642112287524ab3e526ad592b70895c9f3e3733c23701621')
+
+_gitroot=git://git.gnome.org/gtk+
+_gitname=gtk+
+
+build() {
+    #cd "gtk+"
+    cd $srcdir
+
+    msg "Connecting to GIT server...."
+    if [[ -d $_gitname/.git ]]; then
+        pushd $_gitname && git pull
+        msg2 "The local files are updated."
+        popd
+    else
+        git clone $_gitroot
+    fi
+    msg2 "GIT checkout done or server timeout"
+
+    rm -rf $_gitname-build/
+    cp -r $_gitname/ $_gitname-build/
+    cd $_gitname-build/
+
+    msg "Building..."
+
+    CXX=/bin/false ./autogen.sh --prefix=/usr \
+        --sysconfdir=/etc \
+        --localstatedir=/var \
+        --enable-gtk2-dependency \
+        --disable-schemas-compile
+    #https://bugzilla.gnome.org/show_bug.cgi?id=655517
+    sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool
+    make
+}
+
+package() {
+    cd $srcdir/$_gitname-build/
+    make DESTDIR="$pkgdir" install
+
+    install -Dm644 "$srcdir/settings.ini" "$pkgdir/etc/gtk-3.0/settings.ini"
+}

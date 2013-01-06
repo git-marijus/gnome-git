@@ -1,0 +1,50 @@
+# Maintainer: marijus
+
+pkgname=cogl
+pkgver=20130103
+pkgrel=1
+pkgdesc="An object oriented GL/GLES Abstraction/Utility Layer"
+arch=('i686' 'x86_64')
+url="http://www.clutter-project.org/"
+license=('GPL2')
+depends=('libdrm' 'libxext' 'libxdamage' 'libxcomposite' 'gdk-pixbuf2' 'pango')
+makedepends=(mesa gobject-introspection gtk-doc gnome-common git)
+options=(!libtool !emptydirs)
+
+_gitroot=git://git.gnome.org/cogl
+_gitname=cogl
+
+build() {
+    cd $srcdir
+
+    msg "Connecting to GIT server...."
+    if [[ -d $_gitname/.git ]]; then
+        pushd $_gitname && git pull
+        msg2 "The local files are updated."
+        popd
+    else
+        git clone $_gitroot
+
+        #switch branch
+        cd $srcdir/cogl
+        git checkout -b cogl-1.12 origin/cogl-1.12     
+        cd $srcdir 
+    fi
+    msg2 "GIT checkout done or server timeout"
+
+    rm -rf $_gitname-build/
+    cp -r $_gitname/ $_gitname-build/
+    cd $_gitname-build/
+
+    msg "Building..."
+
+  ./autogen.sh --prefix=/usr
+  make
+}
+
+package() {
+  cd $srcdir/$_gitname-build/
+  make DESTDIR="$pkgdir" install
+}
+
+# vim:set ts=2 sw=2 et:
