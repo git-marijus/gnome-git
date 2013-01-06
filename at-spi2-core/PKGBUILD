@@ -1,0 +1,48 @@
+# Maintainer: marijus
+
+pkgname=at-spi2-core
+pkgver=20130103
+pkgrel=1
+pkgdesc="Protocol definitions and daemon for D-Bus at-spi"
+arch=('i686' 'x86_64')
+url="http://www.gnome.org"
+license=('GPL2')
+depends=(dbus-core glib2 libxtst)
+makedepends=(intltool gobject-introspection gtk-doc gnome-common git)
+options=('!libtool')
+
+_gitroot=git://git.gnome.org/at-spi2-core
+_gitname=at-spi2-core
+
+build() {
+    cd $srcdir
+
+    msg "Connecting to GIT server...."
+    if [[ -d $_gitname/.git ]]; then
+        pushd $_gitname && git pull
+        msg2 "The local files are updated."
+        popd
+    else
+        git clone $_gitroot
+    fi
+    msg2 "GIT checkout done or server timeout"
+
+    rm -rf $_gitname-build/
+    cp -r $_gitname/ $_gitname-build/
+    cd $_gitname-build/
+
+
+   sed -i -e '/AC_PATH_XTRA/d' configure.ac
+#  autoreconf --force --install
+
+  ./autogen.sh --prefix=/usr --sysconfdir=/etc \
+    --libexecdir=/usr/lib/at-spi2-core --disable-xevie
+  make
+}
+
+package() {
+  cd $srcdir/$_gitname-build/
+  make DESTDIR="$pkgdir" install
+}
+
+# vim:set ts=2 sw=2 et:
