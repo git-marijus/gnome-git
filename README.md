@@ -6,5 +6,7 @@ for buildinstuctions check: https://wiki.archlinux.org/index.php/DeveloperWiki:B
 
 USE AT YOUR OWN RISK!!!
 
+PS:
+CORE-BUILDORDER is the order i used... allthough it might not be complete it worked nicely for me...
 
 
