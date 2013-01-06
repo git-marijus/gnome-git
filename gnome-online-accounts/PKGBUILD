@@ -1,0 +1,47 @@
+# $Id: PKGBUILD 169222 2012-10-18 19:26:35Z jgc $
+# Maintainer: Ionut Biru <ibiru@archlinux.org>
+
+pkgname=gnome-online-accounts
+pkgver=20130101
+pkgrel=1
+pkgdesc="GNOME service to access online accounts"
+arch=(i686 x86_64)
+url="http://www.gnome.org"
+license=('GPL')
+depends=('webkitgtk3' 'json-glib' 'libnotify' 'rest' 'hicolor-icon-theme' 'libsecret')
+makedepends=(intltool libxslt gobject-introspection docbook-xsl gtk-doc gnome-common git)
+options=(!libtool)
+install=$pkgname.install
+
+_gitroot=git://git.gnome.org/gnome-online-accounts
+_gitname=gnome-online-accounts
+
+build() {
+    cd $srcdir
+
+    msg "Connecting to GIT server...."
+    if [[ -d $_gitname/.git ]]; then
+        pushd $_gitname && git pull
+        msg2 "The local files are updated."
+        popd
+    else
+        git clone $_gitroot
+    fi
+    msg2 "GIT checkout done or server timeout"
+
+    rm -rf $_gitname-build/
+    cp -r $_gitname/ $_gitname-build/
+    cd $_gitname-build/
+
+    msg "Building..."
+
+  ./autogen.sh --prefix=/usr --libexec=/usr/lib/gnome-online-accounts --enable-owncloud
+  make
+}
+
+package() {
+  cd $srcdir/$_gitname-build/
+  make DESTDIR="$pkgdir" install
+}
+
+# vim:set ts=2 sw=2 et:

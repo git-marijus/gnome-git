@@ -1,0 +1,50 @@
+# $Id: PKGBUILD 169954 2012-10-30 22:46:53Z heftig $
+# Maintainer: Jan Alexander Steffens (heftig) <jan.steffens@gmail.com>
+
+pkgname=libpeas
+pkgver=20130101
+pkgrel=1
+pkgdesc="A GObject-based plugins engine"
+arch=('i686' 'x86_64')
+url="http://www.gtk.org/"
+license=('GPL2')
+depends=('gtk3' 'hicolor-icon-theme' 'gobject-introspection')
+makedepends=(intltool python-gobject gjs seed glade gtk-doc gnome-common git)
+optdepends=('gjs: gobject-based plugin engine - gjs runtime loader'
+            'seed: gobject-based plugin engine - seed runtime loader')
+options=('!libtool')
+install=libpeas.install
+
+_gitroot=git://git.gnome.org/libpeas
+_gitname=libpeas
+
+build() {
+    cd $srcdir
+
+    msg "Connecting to GIT server...."
+    if [[ -d $_gitname/.git ]]; then
+        pushd $_gitname && git pull
+        msg2 "The local files are updated."
+        popd
+    else
+        git clone $_gitroot
+    fi
+    msg2 "GIT checkout done or server timeout"
+
+    rm -rf $_gitname-build/
+    cp -r $_gitname/ $_gitname-build/
+    cd $_gitname-build/
+
+    msg "Building..."
+
+  ./autogen.sh --prefix=/usr \
+    --sysconfdir=/etc --localstatedir=/var
+  make
+}
+
+package() {
+  cd $srcdir/$_gitname-build/
+  make DESTDIR="${pkgdir}" install
+}
+
+# vim:set ts=2 sw=2 et:

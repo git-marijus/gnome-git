@@ -1,0 +1,105 @@
+# $Id: PKGBUILD 171520 2012-11-18 10:28:08Z andyrtr $
+# Maintainer: Jan Alexander Steffens (heftig) <jan.steffens@gmail.com>
+# Contributor: Sergej Pupykin <pupykin.s+arch@gmail.com>
+# Contributor: Alexander Fehr <pizzapunk gmail com>
+
+pkgbase=tracker
+pkgname=(tracker libtracker-sparql)
+pkgver=20130101
+pkgrel=1
+
+_tver=0.16
+
+pkgdesc="All-in-one indexer, search tool and metadata database"
+arch=('i686' 'x86_64')
+license=('GPL')
+makedepends=(libgee libsecret upower libexif exempi
+             poppler-glib libgsf icu enca networkmanager gtk3
+             desktop-file-utils hicolor-icon-theme gobject-introspection
+             intltool giflib gst-plugins-base totem-plparser
+             taglib nautilus gnome-panel libvorbis flac vala
+             libgxps gtk-doc gnome-common git)
+url="http://www.gnome.org"
+options=('!libtool' '!emptydirs')
+
+_gitroot=git://git.gnome.org/tracker
+_gitname=tracker
+
+build() {
+    cd $srcdir
+
+    msg "Connecting to GIT server...."
+    if [[ -d $_gitname/.git ]]; then
+        pushd $_gitname && git pull
+        msg2 "The local files are updated."
+        popd
+    else
+        git clone $_gitroot
+    fi
+    msg2 "GIT checkout done or server timeout"
+
+    rm -rf $_gitname-build/
+    cp -r $_gitname/ $_gitname-build/
+    cd $_gitname-build/
+
+    msg "Building..."
+
+  ./autogen.sh \
+    --prefix=/usr \
+    --sysconfdir=/etc \
+    --localstatedir=/var \
+    --libexecdir=/usr/lib/tracker \
+    --disable-unit-tests \
+    --enable-libflac \
+    --enable-libvorbis
+
+  sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0 /g' -e 's/    if test "$export_dynamic" = yes && test -n "$export_dynamic_flag_spec"; then/      func_append compile_command " -Wl,-O1,--as-needed"\n      func_append finalize_command " -Wl,-O1,--as-needed"\n\0/' libtool
+
+  make
+}
+
+package_tracker() {
+  depends=("libtracker-sparql=$pkgver-$pkgrel" 'libgee' 'libgnome-keyring'
+           'upower' 'libexif' 'exempi' 'poppler-glib' 'libgsf' 'enca'
+           'networkmanager' 'gtk3' 'desktop-file-utils' 'hicolor-icon-theme')
+  optdepends=('giflib: extractor for GIF data'
+              'gstreamer0.10-base: video extractor'
+              'totem-plparser: playlist support'
+              'nautilus: nautilus-extension'
+              'libvorbis: Vorbis metadata extractor'
+              'flac: FLAC metadata extractor'
+              'taglib: writeback for audio files'
+              'gnome-panel: tracker-search-bar'
+              'libgxps: XPS extractor')
+  groups=('gnome-extra')
+  install=tracker.install
+
+  cd $srcdir/$_gitname-build/
+  make DESTDIR="$pkgdir" install
+
+### Split libtracker-sparql
+
+  mkdir -p cd $srcdir/$_gitname-build/sparql/usr/{include,lib}/tracker-$_tver
+  mkdir -p cd $srcdir/$_gitname-build/sparql/usr/lib/{girepository-1.0,pkgconfig}
+  mkdir -p cd $srcdir/$_gitname-build/sparql/usr/share/{gir-1.0,vala/vapi}
+
+  mv "$pkgdir"/usr/lib/libtracker-sparql-* "$srcdir/$_gitname-build/sparql/usr/lib"
+
+  mv "$pkgdir"/usr/lib/tracker-$_tver/*.so* \
+    "$srcdir/$_gitname-build/sparql/usr/lib/tracker-$_tver"
+
+  mv "$pkgdir"/usr/share/vala/vapi/tracker-sparql-* \
+    "$srcdir/$_gitname-build/sparql/usr/share/vala/vapi"
+
+  mv {"$pkgdir","$srcdir/$_gitname-build/sparql"}/usr/include/tracker-$_tver/libtracker-sparql
+  mv {"$pkgdir","$srcdir/$_gitname-build/sparql"}/usr/lib/girepository-1.0/Tracker-$_tver.typelib
+  mv {"$pkgdir","$srcdir/$_gitname-build/sparql"}/usr/lib/pkgconfig/tracker-sparql-$_tver.pc
+  mv {"$pkgdir","$srcdir/$_gitname-build/sparql"}/usr/share/gir-1.0/Tracker-$_tver.gir
+}
+
+package_libtracker-sparql() {
+  pkgdesc="$pkgdesc (SPARQL library)"
+  depends=('sqlite' 'icu' 'glib2' 'libffi' 'pcre' 'util-linux')
+
+  mv $srcdir/$_gitname-build/sparql/* "$pkgdir"
+}

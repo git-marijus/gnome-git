@@ -1,0 +1,50 @@
+# $Id: PKGBUILD 78578 2012-10-21 10:46:20Z ibiru $
+# Maintainer:  Ionut Biru <ibiru@archlinux.org>
+# Contributor: uastasi <uastasi@archlinux.us>
+pkgname=gnote
+pkgver=20130101
+pkgrel=1
+pkgdesc="A note taking application."
+arch=('i686' 'x86_64')
+url="http://live.gnome.org/Gnote"
+license=('GPL3')
+depends=('gtkmm3' 'libxslt' 'hicolor-icon-theme' 'desktop-file-utils' 'dconf' 'libsecret')
+makedepends=(intltool yelp-tools boost gtk-doc gnome-common git)
+options=('!libtool')
+install=gnote.install
+
+_gitroot=git://git.gnome.org/gnote
+_gitname=gnote
+
+build() {
+    cd $srcdir
+
+    msg "Connecting to GIT server...."
+    if [[ -d $_gitname/.git ]]; then
+        pushd $_gitname && git pull
+        msg2 "The local files are updated."
+        popd
+    else
+        git clone $_gitroot
+    fi
+    msg2 "GIT checkout done or server timeout"
+
+    rm -rf $_gitname-build/
+    cp -r $_gitname/ $_gitname-build/
+    cd $_gitname-build/
+
+    msg "Building..."
+
+    ./autogen.sh --prefix=/usr \
+        --sysconfdir=/etc \
+        --localstatedir=/var \
+        --libexecdir=/usr/lib/gnote \
+        --disable-schemas-compile \
+        --disable-static
+    make
+}
+
+package() {
+    cd $srcdir/$_gitname-build/
+    make DESTDIR="$pkgdir" install
+}

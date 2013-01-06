@@ -1,0 +1,46 @@
+# $Id: PKGBUILD 169854 2012-10-30 22:24:23Z heftig $
+# Maintainer: Jan de Groot <jgc@archlinux.org>
+# Contributor: Sergej Pupykin <pupykin.s+arch@gmail.com>
+# Contributor: William Rea <sillywilly@gmail.com>
+
+pkgname=clutter
+pkgver=20130101
+pkgrel=1
+pkgdesc="A GObject based library for creating fast, visually rich graphical user interfaces"
+arch=('i686' 'x86_64')
+url="http://clutter-project.org/"
+options=('!libtool')
+license=('LGPL')
+depends=('cogl' 'mesa' 'json-glib' 'atk' 'libxi')
+makedepends=(gobject-introspection mesa gtk-doc gnome-common git)
+
+_gitroot=git://git.gnome.org/clutter
+_gitname=clutter
+
+build() {
+    cd $srcdir
+
+    msg "Connecting to GIT server...."
+    if [[ -d $_gitname/.git ]]; then
+        pushd $_gitname && git pull
+        msg2 "The local files are updated."
+        popd
+    else
+        git clone $_gitroot
+    fi
+    msg2 "GIT checkout done or server timeout"
+
+    rm -rf $_gitname-build/
+    cp -r $_gitname/ $_gitname-build/
+    cd $_gitname-build/
+
+    msg "Building..."
+
+  ./autogen.sh --prefix=/usr --enable-introspection
+  make
+}
+
+package() {
+  cd $srcdir/$_gitname-build/
+  make DESTDIR="$pkgdir" install
+}

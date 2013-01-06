@@ -1,0 +1,47 @@
+# $Id: PKGBUILD 170974 2012-11-14 07:16:34Z heftig $
+# Maintainer: Jan de Groot <jgc@archlinux.org>
+
+pkgname=gnome-icon-theme
+pkgver=20130101
+pkgrel=1
+pkgdesc="GNOME icon theme"
+arch=(any)
+depends=('hicolor-icon-theme' 'icon-naming-utils' 'gtk-update-icon-cache' 'gnome-icon-theme-symbolic')
+makedepends=(intltool gtk-doc gnome-common git)
+url="http://www.gnome.org"
+license=('GPL')
+groups=('gnome')
+install=gnome-icon-theme.install
+options=('!emptydirs')
+
+_gitroot=git://git.gnome.org/gnome-icon-theme
+_gitname=gnome-icon-theme
+
+build() {
+    cd $srcdir
+
+    msg "Connecting to GIT server...."
+    if [[ -d $_gitname/.git ]]; then
+        pushd $_gitname && git pull
+        msg2 "The local files are updated."
+        popd
+    else
+        git clone $_gitroot
+    fi
+    msg2 "GIT checkout done or server timeout"
+
+    rm -rf $_gitname-build/
+    cp -r $_gitname/ $_gitname-build/
+    cd $_gitname-build/
+
+    msg "Building..."
+
+    ./autogen.sh --prefix=/usr
+    make
+}
+
+package() {
+    cd $srcdir/$_gitname-build/
+    make DESTDIR="$pkgdir" install
+    rm -f  "${pkgdir}/usr/share/icons/gnome/icon-theme.cache"
+}

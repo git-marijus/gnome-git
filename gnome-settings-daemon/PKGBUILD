@@ -1,0 +1,61 @@
+# $Id: PKGBUILD 170991 2012-11-14 14:29:35Z ibiru $
+# Maintainer: Jan Alexander Steffens (heftig) <jan.steffens@gmail.com>
+
+pkgname=gnome-settings-daemon
+pkgver=20130101
+pkgrel=1
+pkgdesc="The GNOME Settings daemon"
+arch=('i686' 'x86_64')
+license=('GPL')
+depends=('dconf' 'gnome-desktop' 'libwacom' 'gsettings-desktop-schemas' 'hicolor-icon-theme' 'libcanberra-pulse' 'libnotify'
+         'libsystemd' 'nss' 'pulseaudio' 'pulseaudio-alsa' 'upower' 'librsvg')
+
+makedepends=(intltool xf86-input-wacom libxslt docbook-xsl gtk-doc gnome-common git)
+
+options=('!emptydirs' '!libtool')
+install=gnome-settings-daemon.install
+url="http://www.gnome.org"
+groups=('gnome')
+
+_gitroot=git://git.gnome.org/gnome-settings-daemon
+_gitname=gnome-settings-daemon
+
+build() {
+    cd $srcdir
+
+
+    msg "Connecting to GIT server...."
+    if [[ -d $_gitname/.git ]]; then
+        pushd $_gitname && git pull
+        msg2 "The local files are updated."
+        popd
+    else
+        git clone $_gitroot
+    fi
+    msg2 "GIT checkout done or server timeout"
+
+    rm -rf $_gitname-build/
+    cp -r $_gitname/ $_gitname-build/
+    cd $_gitname-build/
+
+    msg "Building..."
+
+  ./autogen.sh --prefix=/usr --sysconfdir=/etc --localstatedir=/var \
+      --libexecdir=/usr/lib/gnome-settings-daemon --disable-static \
+      --enable-systemd --disable-ibus
+
+  #https://bugzilla.gnome.org/show_bug.cgi?id=656231
+  sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool
+
+  make
+}
+
+package() {
+  cd $srcdir/$_gitname-build/
+  make DESTDIR="$pkgdir" install
+
+  # Plugins that aren't installed still have schema references
+  # and cause gsettings errors - remove the references we're not using
+  sed -i '/org\.gnome\.settings-daemon\.plugins\.updates/d' \
+    "$pkgdir/usr/share/glib-2.0/schemas/org.gnome.settings-daemon.plugins.gschema.xml"
+}

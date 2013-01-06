@@ -1,20 +1,21 @@
-# Maintainer: marijus
+# $Id: PKGBUILD 169945 2012-10-30 22:46:18Z heftig $
+# Maintainer: Ionut Biru <ibiru@archlinux.org>
 
-pkgname=atk
-pkgver=20130103
+pkgname=json-glib
+pkgver=20130101
 pkgrel=1
-pkgdesc="A library providing a set of interfaces for accessibility"
-arch=(i686 x86_64)
-url=http://www.gtk.org/
-license=('LGPL')
-depends=(glib2)
+pkgdesc="JSON library built on GLib"
+arch=('i686' 'x86_64')
+url="http://live.gnome.org/JsonGlib"
+license=('GPL')
+depends=('glib2')
 makedepends=(gobject-introspection gtk-doc gnome-common git)
 options=('!libtool')
 
-_gitroot=git://git.gnome.org/atk
-_gitname=atk
+_gitroot=git://git.gnome.org/json-glib
+_gitname=json-glib
 
-build() {
+build(){
     cd $srcdir
 
     msg "Connecting to GIT server...."
@@ -31,13 +32,16 @@ build() {
     cp -r $_gitname/ $_gitname-build/
     cd $_gitname-build/
 
-    msg "Building..."
-
-    ./autogen.sh --prefix=/usr
-    make
+  ./autogen.sh --prefix=/usr
+  make
 }
 
-package() {
+package(){
   cd $srcdir/$_gitname-build/
-  make DESTDIR="$pkgdir" install
+  make DESTDIR=${pkgdir} install
+}
+
+check(){
+  cd $srcdir/$_gitname-build/
+  make check
 }

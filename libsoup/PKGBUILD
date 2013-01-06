@@ -1,0 +1,67 @@
+# $Id: PKGBUILD 170892 2012-11-12 22:13:35Z heftig $
+# Maintainer: Jan de Groot <jgc@archlinux.org>
+
+pkgbase=libsoup
+pkgname=('libsoup' 'libsoup-gnome')
+pkgver=20130101
+pkgrel=1
+arch=('i686' 'x86_64')
+url="http://www.gnome.org"
+license=('LGPL')
+makedepends=(glib2 libxml2 sqlite intltool gobject-introspection glib-networking python2 gtk-doc gnome-common git)
+options=('!libtool' '!emptydirs')
+
+_gitroot=git://git.gnome.org/libsoup
+_gitname=libsoup
+
+build() {
+     cd $srcdir
+
+    msg "Connecting to GIT server...."
+    if [[ -d $_gitname/.git ]]; then
+        pushd $_gitname && git pull
+        msg2 "The local files are updated."
+        popd
+    else
+        git clone $_gitroot
+    fi
+    msg2 "GIT checkout done or server timeout"
+
+    rm -rf $_gitname-build/
+    cp -r $_gitname/ $_gitname-build/
+    cd $_gitname-build/
+
+    msg "Building..."
+
+  sed -i -e 's/env python/python2/' libsoup/tld-parser.py
+  ./autogen.sh --prefix=/usr --sysconfdir=/etc \
+      --localstatedir=/var --disable-static
+  make
+}
+
+package_libsoup() {
+  pkgdesc="GNOME HTTP Library - base library"
+  depends=('glib2' 'libxml2' 'glib-networking')
+
+  cd $srcdir/$_gitname-build/
+  make DESTDIR="$pkgdir" install
+
+  rm -f "$pkgdir"/usr/lib/libsoup-gnome-2.4.*
+  rm -f "$pkgdir/usr/lib/pkgconfig/libsoup-gnome-2.4.pc"
+  rm -rf "$pkgdir/usr/include/libsoup-gnome-2.4"
+  rm -f "$pkgdir/usr/lib/girepository-1.0/SoupGNOME-2.4.typelib"
+}
+
+package_libsoup-gnome() {
+  pkgdesc="GNOME HTTP Library - GNOME libraries"
+  depends=("libsoup=$pkgver" 'libgnome-keyring' 'sqlite')
+
+  cd $srcdir/$_gitname-build/
+  make DESTDIR="$pkgdir" install
+
+  rm -f "$pkgdir"/usr/lib/libsoup-2.4.*
+  rm -f "$pkgdir/usr/lib/pkgconfig/libsoup-2.4.pc"
+  rm -rf "$pkgdir/usr/include/libsoup-2.4"
+  rm -rf "$pkgdir/usr/share"
+  rm -f "$pkgdir/usr/lib/girepository-1.0/Soup-2.4.typelib"
+}

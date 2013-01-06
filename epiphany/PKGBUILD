@@ -1,0 +1,51 @@
+# $Id: PKGBUILD 169259 2012-10-18 19:28:50Z jgc $
+# Maintainer: Jan de Groot <jgc@archlinux.org>
+
+pkgname=epiphany
+pkgver=20130101
+pkgrel=1
+install=epiphany.install
+pkgdesc="A GNOME web browser based on the WebKit rendering engine."
+arch=('i686' 'x86_64')
+license=('GPL')
+url="http://www.gnome.org/projects/epiphany/"
+depends=('libsoup-gnome' 'libnotify' 'gsettings-desktop-schemas' 'webkitgtk3' 'nss' 'iso-codes' 'dconf' 'gobject-introspection' 'desktop-file-utils'
+         'hicolor-icon-theme' 'gcr' 'gnome-desktop' 'libwnck3')
+makedepends=(intltool startup-notification gtk-doc gnome-common git)
+options=('!libtool' '!emptydirs')
+groups=('gnome')
+
+source=(webkit.patch)
+md5sums=('4fe3db87943f4c7246f0eb9d200e72c2')
+
+_gitroot=git://git.gnome.org/epiphany
+_gitname=epiphany
+
+build() {
+    cd $srcdir
+
+    msg "Connecting to GIT server...."
+    if [[ -d $_gitname/.git ]]; then
+        pushd $_gitname && git pull
+        msg2 "The local files are updated."
+        popd
+    else
+        git clone $_gitroot
+    fi
+    msg2 "GIT checkout done or server timeout"
+
+    rm -rf $_gitname-build/
+    cp -r $_gitname/ $_gitname-build/
+    cd $_gitname-build/
+
+    msg "Building..."
+  patch -p1 -i $srcdir/webkit.patch
+  ./autogen.sh --prefix=/usr --sysconfdir=/etc \
+      --localstatedir=/var
+  make
+}
+
+package() {
+  cd $srcdir/$_gitname-build/
+  make DESTDIR="$pkgdir" install
+}

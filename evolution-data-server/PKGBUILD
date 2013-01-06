@@ -1,0 +1,50 @@
+# $Id: PKGBUILD 169256 2012-10-18 19:28:39Z jgc $
+# Maintainer: Jan de Groot <jgc@archlinux.org>
+
+pkgname=evolution-data-server
+pkgver=20130101
+pkgrel=1
+pkgdesc="Centralized access to appointments and contacts"
+arch=('i686' 'x86_64')
+depends=('gnome-online-accounts' 'nss' 'krb5' 'libgweather' 'libical' 'db' 'libgdata')
+makedepends=(intltool gperf gobject-introspection vala gtk-doc gnome-common git)
+options=('!libtool')
+install=$pkgname.install
+url="http://www.gnome.org"
+license=('GPL')
+
+_gitroot=git://git.gnome.org/evolution-data-server
+_gitname=evolution-data-server
+
+build() {
+    cd $srcdir
+
+    msg "Connecting to GIT server...."
+    if [[ -d $_gitname/.git ]]; then
+        pushd $_gitname && git pull
+        msg2 "The local files are updated."
+        popd
+    else
+        git clone $_gitroot
+    fi
+    msg2 "GIT checkout done or server timeout"
+
+    rm -rf $_gitname-build/
+    cp -r $_gitname/ $_gitname-build/
+    cd $_gitname-build/
+
+    msg "Building..."
+
+  ./autogen.sh --prefix=/usr --sysconfdir=/etc \
+      --localstatedir=/var --with-openldap=yes \
+      --libexecdir=/usr/lib/evolution-data-server \
+      --with-krb5=/usr --with-libdb=/usr \
+      --enable-vala-bindings
+  sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0 /g' -e 's/    if test "$export_dynamic" = yes && test -n "$export_dynamic_flag_spec"; then/      func_append compile_command " -Wl,-O1,--as-needed"\n      func_append finalize_command " -Wl,-O1,--as-needed"\n\0/' libtool
+  make
+}
+
+package() {
+  cd $srcdir/$_gitname-build/
+  make DESTDIR="$pkgdir" install
+}

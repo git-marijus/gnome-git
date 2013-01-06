@@ -1,0 +1,49 @@
+# $Id: PKGBUILD 173080 2012-12-10 11:56:21Z jgc $
+# Maintainer: Jan Alexander Steffens (heftig) <jan.steffens@gmail.com>
+# Contributor: Jan de Groot <jgc@archlinux.org>
+
+pkgname=gedit
+pkgver=20130101
+pkgrel=1
+pkgdesc="A text editor for GNOME"
+arch=('i686' 'x86_64')
+license=('GPL')
+depends=('gtksourceview3' 'gsettings-desktop-schemas' 'libpeas' 'enchant' 'iso-codes' 'libsm' 'desktop-file-utils' 'python-gobject' 'dconf')
+makedepends=(yelp-tools intltool libzeitgeist gtk-doc gnome-common git)
+optdepends=('libzeitgeist: Zeitgeist plugin')
+groups=('gnome-extra')
+options=('!libtool' '!emptydirs')
+url="http://www.gnome.org"
+install=gedit.install
+
+_gitroot=git://git.gnome.org/gedit
+_gitname=gedit
+
+build() {
+    cd $srcdir
+
+    msg "Connecting to GIT server...."
+    if [[ -d $_gitname/.git ]]; then
+        pushd $_gitname && git pull
+        msg2 "The local files are updated."
+        popd
+    else
+        git clone $_gitroot
+    fi
+    msg2 "GIT checkout done or server timeout"
+
+    rm -rf $_gitname-build/
+    cp -r $_gitname/ $_gitname-build/
+    cd $_gitname-build/
+
+  ./autogen.sh --prefix=/usr \
+      --sysconfdir=/etc --localstatedir=/var \
+      --libexecdir=/usr/lib --disable-updater --disable-schemas-compile \
+      --enable-python
+  make
+}
+
+package(){
+  cd $srcdir/$_gitname-build/
+  make DESTDIR="$pkgdir" install
+}

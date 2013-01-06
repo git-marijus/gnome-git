@@ -1,0 +1,48 @@
+# $Id: PKGBUILD 170929 2012-11-13 11:37:12Z heftig $
+# Maintainer : Ionut Biru <ibiru@archlinux.org>
+# Contributor: Jaroslav Lichtblau <dragonlord@aur.archlinux.org>
+# Contributor: Adam Hani Schakaki (krzd) <krzd@krzd.net>
+
+pkgname=gsettings-desktop-schemas
+pkgver=20130103
+pkgrel=1
+pkgdesc="Shared GSettings schemas for the desktop"
+arch=('any')
+url="http://live.gnome.org/"
+license=('GPL')
+depends=('glib2')
+makedepends=(intltool gobject-introspection gtk-doc gnome-common git)
+install=$pkgname.install
+
+_gitroot=git://git.gnome.org/gsettings-desktop-schemas
+_gitname=gsettings-desktop-schemas
+
+
+build() {
+  cd $srcdir
+
+    msg "Connecting to GIT server...."
+    if [[ -d $_gitname/.git ]]; then
+        pushd $_gitname && git pull
+        msg2 "The local files are updated."
+        popd
+    else
+        git clone $_gitroot
+    fi
+    msg2 "GIT checkout done or server timeout"
+
+    rm -rf $_gitname-build/
+    cp -r $_gitname/ $_gitname-build/
+    cd $_gitname-build/
+
+    msg "Building..."
+
+  ./autogen.sh --prefix=/usr --sysconfdir=/etc --localstatedir=/var \
+    --disable-schemas-compile
+  make
+}
+
+package() {
+  cd $srcdir/$_gitname-build/
+  make DESTDIR="$pkgdir" install
+}

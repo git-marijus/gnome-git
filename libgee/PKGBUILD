@@ -1,0 +1,51 @@
+# $Id: PKGBUILD 170755 2012-11-10 23:14:19Z heftig $
+# Maintainer : Ionut Biru <ibiru@archlinux.org>
+# Contributor: Sergej Pupykin <pupykin.s+arch@gmail.com>
+
+pkgname=libgee
+pkgver=20130101
+pkgrel=1
+pkgdesc="GObject collection library"
+url="http://live.gnome.org/Libgee"
+license=('LGPL2.1')
+arch=('i686' 'x86_64')
+depends=('glib2')
+makedepends=(gobject-introspection vala gtk-doc gnome-common git)
+options=('!libtool')
+
+_gitroot=git://git.gnome.org/libgee
+_gitname=libgee
+
+build() {
+    cd $srcdir
+
+    msg "Connecting to GIT server...."
+    if [[ -d $_gitname/.git ]]; then
+        pushd $_gitname && git pull
+        msg2 "The local files are updated."
+        popd
+    else
+        git clone $_gitroot
+	
+        #switch branch
+        cd $srcdir/libgee
+        git checkout -b 0.6 origin/0.6     
+        cd $srcdir 
+
+    fi
+    msg2 "GIT checkout done or server timeout"
+
+    rm -rf $_gitname-build/
+    cp -r $_gitname/ $_gitname-build/
+    cd $_gitname-build/
+
+    msg "Building..."
+
+    ./autogen.sh --prefix=/usr --disable-static
+    make
+}
+
+package() {
+    cd $srcdir/$_gitname-build/
+    make DESTDIR="$pkgdir" install
+}

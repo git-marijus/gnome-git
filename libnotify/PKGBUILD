@@ -1,0 +1,44 @@
+# $Id: PKGBUILD 154761 2012-03-30 16:37:09Z heftig $
+# Maintainer: Jan de Groot <jgc@archlinux.org>
+
+pkgname=libnotify
+pkgver=20130101
+pkgrel=1
+pkgdesc="Desktop notification library"
+arch=('i686' 'x86_64')
+url="http://library.gnome.org/devel/notification-spec/"
+license=('LGPL')
+depends=('gdk-pixbuf2')
+makedepends=(gtk3 gobject-introspection gtk-doc gnome-common git)
+options=('!libtool')
+
+_gitroot=git://git.gnome.org/libnotify
+_gitname=libnotify
+
+build() {
+    cd $srcdir
+
+    msg "Connecting to GIT server...."
+    if [[ -d $_gitname/.git ]]; then
+        pushd $_gitname && git pull
+        msg2 "The local files are updated."
+        popd
+    else
+        git clone $_gitroot
+    fi
+    msg2 "GIT checkout done or server timeout"
+
+    rm -rf $_gitname-build/
+    cp -r $_gitname/ $_gitname-build/
+    cd $_gitname-build/
+
+    msg "Building..."
+
+    ./autogen.sh --prefix=/usr --disable-static
+    make
+}
+
+package() {
+    cd $srcdir/$_gitname-build/
+    make DESTDIR="${pkgdir}" install
+}

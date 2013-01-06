@@ -1,0 +1,52 @@
+# $Id: PKGBUILD 169169 2012-10-18 19:23:25Z jgc $
+# Maintainer: Jan Alexander Steffens (heftig) <jan.steffens@gmail.com>
+# Maintainer: Ionut Biru <ibiru@archlinux.org>
+# Contributor: Michael Kanis <mkanis_at_gmx_dot_de>
+
+pkgname=mutter
+pkgver=20130101
+pkgrel=1
+pkgdesc="A window manager for GNOME"
+arch=(i686 x86_64)
+license=('GPL')
+depends=('clutter' 'dconf' 'gobject-introspection' 'gsettings-desktop-schemas' 'libcanberra' 'startup-notification' 'zenity' 'libsm')
+makedepends=(intltool gnome-doc-utils gtk-doc gnome-common git)
+url="http://www.gnome.org"
+groups=('gnome')
+options=('!libtool' '!emptydirs')
+install=mutter.install
+
+_gitroot=git://git.gnome.org/mutter
+_gitname=mutter
+
+build() {
+    cd $srcdir
+
+    msg "Connecting to GIT server...."
+    if [[ -d $_gitname/.git ]]; then
+        pushd $_gitname && git pull
+        msg2 "The local files are updated."
+        popd
+    else
+        git clone $_gitroot
+    fi
+    msg2 "GIT checkout done or server timeout"
+
+    rm -rf $_gitname-build/
+    cp -r $_gitname/ $_gitname-build/
+    cd $_gitname-build/
+
+    msg "Building..."
+
+  ./autogen.sh --prefix=/usr --sysconfdir=/etc \
+      --libexecdir=/usr/lib/mutter \
+      --localstatedir=/var --disable-static \
+      --disable-schemas-compile \
+#      --enable-compile-warnings=minimum
+  make
+}
+
+package() {
+  cd $srcdir/$_gitname-build/
+  make DESTDIR="$pkgdir" install
+}

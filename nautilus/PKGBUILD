@@ -1,0 +1,53 @@
+# $Id: PKGBUILD 169536 2012-10-23 10:44:23Z jgc $
+# Maintainer: Jan de Groot <jgc@archlinux.org>
+
+pkgname=nautilus
+pkgver=20130101
+pkgrel=1
+pkgdesc="GNOME file manager"
+arch=('i686' 'x86_64')
+license=('GPL')
+depends=('libexif' 'gnome-desktop' 'exempi' 'gvfs' 'desktop-file-utils' 'gnome-icon-theme' 'dconf' 'libtracker-sparql' 'libnotify')
+makedepends=(intltool gobject-introspection gtk-doc gnome-common git)
+url="http://www.gnome.org"
+groups=('gnome')
+options=('!libtool' '!emptydirs')
+install=nautilus.install
+
+_gitroot=git://git.gnome.org/nautilus
+_gitname=nautilus
+
+
+build() {
+    cd $srcdir
+
+    msg "Connecting to GIT server...."
+    if [[ -d $_gitname/.git ]]; then
+        pushd $_gitname && git pull
+        msg2 "The local files are updated."
+        popd
+    else
+        git clone $_gitroot
+    fi
+    msg2 "GIT checkout done or server timeout"
+
+    rm -rf $_gitname-build/
+    cp -r $_gitname/ $_gitname-build/
+    cd $_gitname-build/
+
+    msg "Building..."
+
+  ./autogen.sh --prefix=/usr --sysconfdir=/etc \
+      --localstatedir=/var --disable-static \
+      --libexecdir=/usr/lib/nautilus \
+      --disable-nst-extension \
+      --disable-update-mimedb \
+      --disable-packagekit \
+      --disable-schemas-compile
+  make
+}
+
+package() {
+  cd $srcdir/$_gitname-build/
+  make DESTDIR="$pkgdir" install
+}

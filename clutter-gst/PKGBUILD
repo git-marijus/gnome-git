@@ -1,18 +1,20 @@
-# Maintainer: marijus
+# $Id: PKGBUILD 169856 2012-10-30 22:24:31Z heftig $
+# Maintainer: Jan "heftig" Steffens <jan.steffens@gmail.com>
 
-pkgname=atk
-pkgver=20130103
+pkgname=clutter-gst
+pkgver=20130101
 pkgrel=1
-pkgdesc="A library providing a set of interfaces for accessibility"
-arch=(i686 x86_64)
-url=http://www.gtk.org/
+pkgdesc="GStreamer bindings for clutter"
+arch=('i686' 'x86_64')
+url="http://www.clutter-project.org/"
 license=('LGPL')
-depends=(glib2)
+depends=('clutter' 'gst-plugins-base-libs' 'libxdamage')
 makedepends=(gobject-introspection gtk-doc gnome-common git)
 options=('!libtool')
 
-_gitroot=git://git.gnome.org/atk
-_gitname=atk
+_gitroot=git://git.gnome.org/clutter-gst
+_gitname=clutter-gst
+
 
 build() {
     cd $srcdir
@@ -33,11 +35,15 @@ build() {
 
     msg "Building..."
 
-    ./autogen.sh --prefix=/usr
-    make
+  ./autogen.sh \
+    --prefix=/usr \
+    --sysconfdir=/etc
+  make
 }
 
 package() {
   cd $srcdir/$_gitname-build/
   make DESTDIR="$pkgdir" install
 }
+
+# vim:set ts=2 sw=2 et:

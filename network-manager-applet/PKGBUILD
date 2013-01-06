@@ -1,0 +1,50 @@
+# Contributor: kasa <biuta.jr@gmail.com>
+# Contributor: L42y <423300@gmail.com>
+
+pkgname=network-manager-applet
+pkgver=20121221
+pkgrel=1
+pkgdesc="GNOME frontends to NetWorkmanager"
+arch=('i686' 'x86_64')
+license=('GPL')
+url="http://www.gnome.org/projects/NetworkManager/"
+depends=("networkmanager=${pkgver::8}" 'libgnome-keyring' 'polkit-gnome' 'gtk3' 'libnotify'
+         'gnome-icon-theme' 'mobile-broadband-provider-info' 'iso-codes')
+makedepends=('intltool' 'gnome-bluetooth' 'gtk-doc' 'git' 'gobject-introspection')
+options=('!libtool')
+install=${pkgname}.install
+
+_gitroot="git://git.gnome.org/network-manager-applet"
+_gitname="network-manager-applet"
+
+build() {
+  cd ${srcdir}
+  
+  msg "Connecting to git.gnome.org GIT server...."
+
+  if [ -d ${srcdir}/$_gitname ] ; then
+	  cd $_gitname && git pull origin
+	  msg "The local files are updated."
+  else
+	  git clone $_gitroot
+  fi
+
+  msg "GIT checkout done or server timeout"
+  msg "Starting make..."
+
+  cp -r ${srcdir}/$_gitname ${srcdir}/$_gitname-build
+  cd ${srcdir}/$_gitname-build
+ 
+  ./autogen.sh --prefix=/usr --sysconfdir=/etc \
+      --localstatedir=/var \
+      --libexecdir=/usr/lib/networkmanager \
+      --disable-static \
+      --disable-maintainer-mode \
+      --disable-migration
+  make
+}
+
+package() {
+  cd ${srcdir}/$_gitname-build
+  make DESTDIR="${pkgdir}" install
+}

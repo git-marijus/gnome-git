@@ -1,0 +1,47 @@
+# $Id: PKGBUILD 169956 2012-10-30 22:47:03Z heftig $
+# Maintainer: Jan de Groot <jgc@archlinux.org>
+
+pkgname=librsvg
+pkgver=20130101
+pkgrel=1
+pkgdesc="A SVG viewing library"
+arch=(i686 x86_64)
+license=('LGPL')
+depends=('gdk-pixbuf2' 'pango' 'libcroco')
+makedepends=(intltool gtk2 gtk3 gobject-introspection gtk-doc gnome-common git)
+optdepends=('gtk3: for rsvg-view-3'
+            'gtk2: gtk2 SVG engine module')
+options=('!libtool' '!emptydirs')
+url="http://librsvg.sourceforge.net/"
+install=librsvg.install
+
+_gitroot=git://git.gnome.org/librsvg
+_gitname=librsvg
+
+build() {
+    cd $srcdir
+
+    msg "Connecting to GIT server...."
+    if [[ -d $_gitname/.git ]]; then
+        pushd $_gitname && git pull
+        msg2 "The local files are updated."
+        popd
+    else
+        git clone $_gitroot
+    fi
+    msg2 "GIT checkout done or server timeout"
+
+    rm -rf $_gitname-build/
+    cp -r $_gitname/ $_gitname-build/
+    cd $_gitname-build/
+
+    msg "Building..."
+
+  ./autogen.sh --prefix=/usr --disable-static
+  make
+}
+
+package() {
+  cd $srcdir/$_gitname-build/
+  make DESTDIR="$pkgdir" install
+}

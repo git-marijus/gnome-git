@@ -1,18 +1,19 @@
-# Maintainer: marijus
+# $Id: PKGBUILD 169176 2012-10-18 19:23:47Z jgc $
+# Maintainer: Jan de Groot <jgc@archlinux.org>
 
-pkgname=atk
-pkgver=20130103
+pkgname=libcroco
+pkgver=20130101
 pkgrel=1
-pkgdesc="A library providing a set of interfaces for accessibility"
-arch=(i686 x86_64)
-url=http://www.gtk.org/
+pkgdesc="A CSS parsing library"
+arch=('x86_64' 'i686')
+url="http://www.gnome.org"
 license=('LGPL')
-depends=(glib2)
-makedepends=(gobject-introspection gtk-doc gnome-common git)
+depends=('glib2' 'libxml2')
+makedepends=(intltool gtk-doc gnome-common git)
 options=('!libtool')
 
-_gitroot=git://git.gnome.org/atk
-_gitname=atk
+_gitroot=git://git.gnome.org/libcroco
+_gitname=libcroco
 
 build() {
     cd $srcdir
@@ -33,8 +34,8 @@ build() {
 
     msg "Building..."
 
-    ./autogen.sh --prefix=/usr
-    make
+  ./autogen.sh --prefix=/usr --disable-static
+  make
 }
 
 package() {

@@ -1,0 +1,61 @@
+# $Id: PKGBUILD 170931 2012-11-13 12:56:29Z heftig $
+# Maintainer: Jan de Groot  <jgc@archlinux.org>
+
+pkgname=libgweather
+pkgver=20130101
+pkgrel=1
+pkgdesc="Provides access to weather information from the net"
+arch=('i686' 'x86_64')
+license=('LGPL')
+depends=('libsoup-gnome' 'gnome-icon-theme' 'gtk3')
+makedepends=(intltool gtk-doc gobject-introspection gnome-common git)
+options=('!libtool' '!emptydirs')
+url="http://www.gnome.org/"
+install=libgweather.install
+source=(gettext-not-xml.patch
+        no_external_gettext.patch)
+sha256sums=('40325e0b5464ebb75eaad3c9292c0bab7b15cfefb93011d9ccc0ab82635a9533'
+            'f07ac07a70ad4999c3acd5d5b82aabd8831e6a45beb9aaed239f212057ded672')
+
+_gitroot=git://git.gnome.org/libgweather
+_gitname=libgweather
+
+build() {
+    cd $srcdir
+
+    msg "Connecting to GIT server...."
+    if [[ -d $_gitname/.git ]]; then
+        pushd $_gitname && git pull
+        msg2 "The local files are updated."
+        popd
+    else
+        git clone $_gitroot
+    fi
+    msg2 "GIT checkout done or server timeout"
+
+    rm -rf $_gitname-build/
+    cp -r $_gitname/ $_gitname-build/
+    cd $_gitname-build/
+
+    msg "Building..."
+
+#    patch -Np1 -i "$srcdir/gettext-not-xml.patch"
+#    patch -Np1 -i "$srcdir/no_external_gettext.patch"
+#    gtkdocize
+#    autoreconf -fi
+#    cd po
+#    intltool-update --pot
+#    cd ../po-locations
+#    intltool-update --gettext-package libgweather-locations --pot
+#    cd ..
+
+    ./autogen.sh --prefix=/usr --sysconfdir=/etc \
+        --localstatedir=/var --disable-static \
+        --enable-locations-compression
+    make
+}
+
+package() {
+    cd $srcdir/$_gitname-build/
+    make GCONF_DISABLE_MAKEFILE_SCHEMA_INSTALL=1 DESTDIR="$pkgdir" install
+}

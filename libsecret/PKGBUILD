@@ -1,0 +1,45 @@
+# $Id: PKGBUILD 166488 2012-09-08 10:31:44Z jgc $
+# Maintainer: Jan de Groot <jgc@archlinux.org>
+
+pkgname=libsecret
+pkgver=20130101
+pkgrel=1
+pkgdesc='library for storing and retrieving passwords and other secrets.'
+arch=('i686' 'x86_64')
+license=('LGPL')
+url="https://live.gnome.org/Libsecret"
+depends=('glib2' 'libgcrypt')
+makedepends=(intltool docbook-xsl gobject-introspection gtk-doc gnome-common git)
+options=('!libtool')
+
+_gitroot=git://git.gnome.org/libsecret
+_gitname=libsecret
+
+build() {
+    cd $srcdir
+
+    msg "Connecting to GIT server...."
+    if [[ -d $_gitname/.git ]]; then
+        pushd $_gitname && git pull
+        msg2 "The local files are updated."
+        popd
+    else
+        git clone $_gitroot
+    fi
+    msg2 "GIT checkout done or server timeout"
+
+    rm -rf $_gitname-build/
+    cp -r $_gitname/ $_gitname-build/
+    cd $_gitname-build/
+
+    msg "Building..."
+
+  ./autogen.sh --prefix=/usr --sysconfdir=/etc \
+      --localstatedir=/var --disable-static
+  make
+}
+
+package() {
+  cd $srcdir/$_gitname-build/
+  make DESTDIR="$pkgdir" install
+}
