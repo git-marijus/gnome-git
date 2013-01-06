@@ -1,6 +1,4 @@
-# Maintainer: Limao Luo <luolimao+AUR@gmail.com>
-# Contributor: Yichao Yu <yyc1992@gmail.com>
-# Contributor: kfgz <kfgz@interia.pl>
+# Maintainer: marijus
 
 pkgname=glib2
 pkgver=20130101
