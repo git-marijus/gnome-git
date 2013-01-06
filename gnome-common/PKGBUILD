@@ -1,0 +1,42 @@
+# $Id: PKGBUILD 169890 2012-10-30 22:33:44Z heftig $
+# Maintainer: Jan de Groot <jgc@archlinux.org>
+
+pkgname=gnome-common
+pkgver=20130101
+pkgrel=1
+pkgdesc="Common development macros for GNOME"
+arch=(any)
+license=('GPL')
+url="http://www.gnome.org"
+makedepends=(git)
+
+_gitroot=git://git.gnome.org/gnome-common
+_gitname=gnome-common
+
+build() {
+    cd $srcdir
+
+    msg "Connecting to GIT server...."
+    if [[ -d $_gitname/.git ]]; then
+        pushd $_gitname && git pull
+        msg2 "The local files are updated."
+        popd
+    else
+        git clone $_gitroot
+    fi
+    msg2 "GIT checkout done or server timeout"
+
+    rm -rf $_gitname-build/
+    cp -r $_gitname/ $_gitname-build/
+    cd $_gitname-build/
+
+    msg "Building..."
+
+  ./autogen.sh --prefix=/usr
+  make
+}
+
+package() {
+  cd $srcdir/$_gitname-build/
+  make DESTDIR="$pkgdir" install
+}
