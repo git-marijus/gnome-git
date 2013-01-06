@@ -1,5 +1,4 @@
-# $Id: PKGBUILD 169881 2012-10-30 22:25:52Z heftig $
-# Maintainer: Ionut Biru <ibiru@archlinux.org>
+# Maintainer: marijus
 
 pkgname=gjs
 pkgver=20121129
