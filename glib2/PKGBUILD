@@ -1,0 +1,61 @@
+# Maintainer: Limao Luo <luolimao+AUR@gmail.com>
+# Contributor: Yichao Yu <yyc1992@gmail.com>
+# Contributor: kfgz <kfgz@interia.pl>
+
+pkgname=glib2
+pkgver=20130101
+pkgrel=1
+pkgdesc="Common C routines used by GTK+ 2.4 and other libs"
+arch=(i686 x86_64)
+url=http://www.gtk.org/
+license=(LGPL)
+depends=(pcre libffi)
+makedepends=(python2 gtk-doc git)
+provides=($pkgname)
+options=(!libtool !docs !emptydirs)
+
+source=(revert-warn-glib-compile-schemas.patch)
+sha256sums=('049240975cd2f1c88fbe7deb28af14d4ec7d2640495f7ca8980d873bb710cc97')
+
+
+_gitroot=git://git.gnome.org/glib
+_gitname=glib
+
+build() {
+    cd "$srcdir"
+
+    msg "Connecting to GIT server...."
+    if [[ -d $_gitname/.git ]]; then
+        pushd $_gitname && git pull
+        msg2 "The local files are updated."
+        popd
+    else
+        git clone $_gitroot
+    fi
+    msg2 "GIT checkout done or server timeout"
+
+    rm -rf $_gitname-build/
+    cp -r $_gitname/ $_gitname-build/
+    cd $_gitname-build/
+
+    msg "Building..."
+
+    patch -Rp1 -i "$srcdir/revert-warn-glib-compile-schemas.patch"
+
+    ./autogen.sh --prefix=/usr \
+        --libdir=/usr/lib \
+        --sysconfdir=/etc \
+        --with-pcre=system \
+        --disable-fam
+    make
+}
+
+package() {
+  cd "$srcdir"/$_gitname-build/
+  make completiondir=/usr/share/bash-completion/completions DESTDIR="$pkgdir" install
+
+  for _i in "$pkgdir/usr/share/bash-completion/completions/"*; do
+      chmod -x "$_i"
+  done
+  sed -i "s|#!/usr/bin/env python|#!/usr/bin/env python2|" "$pkgdir"/usr/bin/gdbus-codegen
+}
