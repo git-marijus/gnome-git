@@ -1,0 +1,46 @@
+# Maintainer: Jan de Groot <jgc@archlinux.org>
+
+pkgname=gnome-disk-utility
+pkgver=20130109
+pkgrel=1
+pkgdesc="Disk Management Utility for GNOME"
+arch=('i686' 'x86_64')
+license=('GPL')
+url="http://www.gnome.org"
+groups=('gnome-extra')
+depends=('gtk3' 'udisks2' 'hicolor-icon-theme' 'libsecret' 'libpwquality' 'desktop-file-utils' 'libcanberra' 'libdvdread' 'gnome-settings-daemon')
+makedepends=(intltool docbook-xsl gtk-doc gnome-common git)
+options=('!libtool' '!emptydirs')
+install=gnome-disk-utility.install
+
+_gitroot=git://git.gnome.org/gnome-disk-utility
+_gitname=gnome-disk-utility
+
+build() {
+    cd $srcdir
+
+    msg "Connecting to GIT server...."
+    if [[ -d $_gitname/.git ]]; then
+        pushd $_gitname && git pull
+        msg2 "The local files are updated."
+        popd
+    else
+        git clone $_gitroot
+    fi
+    msg2 "GIT checkout done or server timeout"
+
+    rm -rf $_gitname-build/
+    cp -r $_gitname/ $_gitname-build/
+    cd $_gitname-build/
+
+    msg "Building..."
+
+  ./autogen.sh --prefix=/usr --sysconfdir=/etc
+
+  make
+}
+
+package() {
+  cd $srcdir/$_gitname-build/
+  make DESTDIR="$pkgdir" install
+}
