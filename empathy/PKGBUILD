@@ -1,0 +1,57 @@
+# Maintainer: marijus
+
+pkgname=empathy
+pkgver=20130109
+pkgrel=1
+pkgdesc="A GNOME instant messaging client using the Telepathy framework."
+arch=('i686' 'x86_64')
+url="http://live.gnome.org/Empathy"
+license=('GPL2')
+depends=('clutter-gst' 'clutter-gtk' 'folks' 'gcr' 'iso-codes' 'libcanberra' 'libpulse' 'webkitgtk3' 'telepathy-farstream' 'telepathy-glib' 'telepathy-logger' 'telepathy-mission-control')
+makedepends=(intltool yelp-tools nautilus-sendto vala gtk-doc gnome-common git)
+optdepends=('telepathy-gabble: XMPP/Jabber support'
+            'telepathy-idle: IRC support'
+            'telepathy-salut: Link-local XMPP support'
+            'telepathy-rakia: SIP support'
+            'telepathy-haze: libpurple support'
+            'nautilus-sendto: Send files from nautilus')
+options=('!libtool' '!makeflags')
+groups=('gnome-extra')
+install=empathy.install
+
+_gitroot=git://git.gnome.org/empathy
+_gitname=empathy
+
+build() {
+    cd $srcdir
+
+    msg "Connecting to GIT server...."
+    if [[ -d $_gitname/.git ]]; then
+        pushd $_gitname && git pull
+        msg2 "The local files are updated."
+        popd
+    else
+        git clone $_gitroot
+    fi
+    msg2 "GIT checkout done or server timeout"
+
+    rm -rf $_gitname-build/
+    cp -r $_gitname/ $_gitname-build/
+    cd $_gitname-build/
+
+    msg "Building..."
+
+  PYTHON=/usr/bin/python2 ./autogen.sh --prefix=/usr \
+      --sysconfdir=/etc  \
+      --libexecdir=/usr/lib/empathy \
+      --disable-static \
+      --disable-schemas-compile \
+      --enable-gst-1.0=yes
+  sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool
+  make
+}
+
+package() {
+  cd $srcdir/$_gitname-build/
+  make DESTDIR="$pkgdir" install
+}
