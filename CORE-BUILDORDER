@@ -6,6 +6,7 @@ atk
 at-spi2-core
 dconf
 at-spi2-atk
+gdk-pixbuf2
 pango
 cogl
 gtk3
