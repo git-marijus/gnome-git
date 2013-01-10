@@ -1,0 +1,51 @@
+# $Id: PKGBUILD 170725 2012-11-10 05:22:37Z heftig $
+# Maintainer: Ionut Biru <ibiru@archlinux.org>
+
+pkgname=gdk-pixbuf2
+pkgver=20130110
+pkgrel=1
+pkgdesc="An image loading library"
+arch=('i686' 'x86_64')
+url="http://www.gtk.org/"
+license=('LGPL2.1')
+depends=('glib2' 'libpng' 'libtiff' 'libjpeg' 'libx11')
+makedepends=(gtk-doc gobject-introspection gnome-common git)
+options=('!libtool')
+install=gdk-pixbuf2.install
+
+_gitroot=git://git.gnome.org/gdk-pixbuf
+_gitname=gdk-pixbuf
+
+build() {
+    cd $srcdir
+
+    msg "Connecting to GIT server...."
+    if [[ -d $_gitname/.git ]]; then
+        pushd $_gitname && git pull
+        msg2 "The local files are updated."
+        popd
+    else
+        git clone $_gitroot
+    fi
+    msg2 "GIT checkout done or server timeout"
+
+    rm -rf $_gitname-build/
+    cp -r $_gitname/ $_gitname-build/
+    cd $_gitname-build/
+
+    msg "Building..."
+
+  ./autogen.sh --prefix=/usr \
+    --without-libjasper \
+    --with-x11 \
+    --with-included-loaders=png
+  make
+}
+
+package() {
+  cd $srcdir/$_gitname-build/
+
+  make DESTDIR="$pkgdir" install
+}
+
+# vim:set ts=2 sw=2 et:
