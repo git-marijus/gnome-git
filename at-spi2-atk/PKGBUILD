@@ -8,7 +8,7 @@ arch=('i686' 'x86_64')
 url="http://www.gnome.org"
 license=('GPL2')
 depends=('at-spi2-core' 'libx11' 'atk' 'dconf')
-makedepends=(intltool gtk-doc gnome-common git)
+makedepends=('intltool' 'gtk-doc' 'gnome-common' 'git')
 install=at-spi2-atk.install
 options=('!libtool')
 
