@@ -4,11 +4,11 @@ pkgname=atk
 pkgver=20130103
 pkgrel=1
 pkgdesc="A library providing a set of interfaces for accessibility"
-arch=(i686 x86_64)
+arch=('i686' 'x86_64')
 url=http://www.gtk.org/
 license=('LGPL')
-depends=(glib2)
-makedepends=(gobject-introspection gtk-doc gnome-common git)
+depends=('glib2')
+makedepends=('gobject-introspection' 'gtk-doc' 'gnome-common' 'git')
 options=('!libtool')
 
 _gitroot=git://git.gnome.org/atk
