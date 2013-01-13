@@ -9,7 +9,7 @@ arch=('i686' 'x86_64')
 url="http://www.clutter-project.org/"
 license=('LGPL')
 depends=('clutter' 'gst-plugins-base-libs' 'libxdamage')
-makedepends=(gobject-introspection gtk-doc gnome-common git)
+makedepends=('gobject-introspection' 'gtk-doc' 'gnome-common' 'git')
 options=('!libtool')
 
 _gitroot=git://git.gnome.org/clutter-gst
