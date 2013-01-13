@@ -7,8 +7,8 @@ pkgdesc="Protocol definitions and daemon for D-Bus at-spi"
 arch=('i686' 'x86_64')
 url="http://www.gnome.org"
 license=('GPL2')
-depends=(dbus-core glib2 libxtst)
-makedepends=(intltool gobject-introspection gtk-doc gnome-common git)
+depends=('dbus-core' 'glib2' 'libxtst')
+makedepends=('intltool' 'gobject-introspection' 'gtk-doc' 'gnome-common' 'git')
 options=('!libtool')
 
 _gitroot=git://git.gnome.org/at-spi2-core
