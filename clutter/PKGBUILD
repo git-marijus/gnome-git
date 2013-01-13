@@ -12,7 +12,7 @@ url="http://clutter-project.org/"
 options=('!libtool')
 license=('LGPL')
 depends=('cogl' 'mesa' 'json-glib' 'atk' 'libxi')
-makedepends=(gobject-introspection mesa gtk-doc gnome-common git)
+makedepends=('gobject-introspection' 'mesa' 'gtk-doc' 'gnome-common' 'git')
 
 _gitroot=git://git.gnome.org/clutter
 _gitname=clutter
