@@ -1,5 +1,4 @@
-# $Id: PKGBUILD 169855 2012-10-30 22:24:27Z heftig $
-# Maintainer: Jan de Groot <jgc@archlinux.org>
+# Maintainer: marijus
 
 pkgname=clutter-gtk
 pkgver=20130101
@@ -10,7 +9,7 @@ url="http://clutter-project.org/"
 options=('!libtool')
 license=('LGPL')
 depends=('clutter' 'gtk3')
-makedepends=(gobject-introspection gtk-doc gnome-common git)
+makedepends=('gobject-introspection' 'gtk-doc' 'gnome-common' 'git')
 
 _gitroot=git://git.gnome.org/clutter-gtk
 _gitname=clutter-gtk
