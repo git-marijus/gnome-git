@@ -1,7 +1,4 @@
-# $Id: PKGBUILD 169854 2012-10-30 22:24:23Z heftig $
-# Maintainer: Jan de Groot <jgc@archlinux.org>
-# Contributor: Sergej Pupykin <pupykin.s+arch@gmail.com>
-# Contributor: William Rea <sillywilly@gmail.com>
+# Maintainer: marijus
 
 pkgname=clutter
 pkgver=20130101
